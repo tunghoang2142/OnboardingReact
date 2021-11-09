@@ -1,12 +1,11 @@
 import React, { useState, useReducer, useRef } from 'react'
-import { Table, Button, Icon, Menu, Select } from 'semantic-ui-react'
+import { Table, Button, Icon } from 'semantic-ui-react'
 import EditCustomer from './EditCustomer';
 import DeleteModal from '../Common/DeleteModal';
-import TablePagination from '../Common/TablePagination';
 import _ from 'lodash'
 
 const CustomerTable = (props) => {
-    const { customers, fetchCustomer, entryCount } = props;
+    const { customers, fetchCustomer } = props;
     const [openEdit, setOpenEdit] = useState(false);
     const [openDelete, setOpenDelete] = useState(false);
     const [customer, setCustomer] = useState(undefined);
@@ -63,10 +62,6 @@ const CustomerTable = (props) => {
     const [state, dispatch] = sortReducerRef
     const { column, data, direction } = state
 
-    function pageChangeHandle(e, { activePage }) {
-        console.log(activePage)
-    }
-
     // console.log(sortReducerRef)
 
     return (
@@ -120,14 +115,6 @@ const CustomerTable = (props) => {
                     )
                 })}
             </Table.Body>
-            <Table.Footer>
-                {/* <Select defaultValue='5' onChange={(_e, data) => {
-                    this.setState({
-                        entryCount: data.value
-                    })
-                }} options={[{ value: 1, text: '1' }, { value: 5, text: '5' }, { value: 10, text: '10' }]} /> */}
-                {/* <TablePagination pageChangeHandle={pageChangeHandle} /> */}
-            </Table.Footer>
         </Table>
     )
 }

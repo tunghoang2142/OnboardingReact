@@ -7,7 +7,7 @@ import moment from 'moment';
 
 const SalesTable = (props) => {
     const { sales, fetchSales } = props;
-    const salesRef = useRef(sales)
+    const salesRef = useRef(undefined)
     const [openEdit, setOpenEdit] = useState(false);
     const [openDelete, setOpenDelete] = useState(false);
     const [sale, setSale] = useState(undefined);
@@ -15,6 +15,7 @@ const SalesTable = (props) => {
 
     useEffect(() => {
         if (typeof sales !== undefined && sales.length > 0 && salesRef.current !== sales) {
+            console.log(sales)
             salesRef.current = sales
             getData()
         }

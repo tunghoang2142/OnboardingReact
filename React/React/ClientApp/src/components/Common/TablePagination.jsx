@@ -1,15 +1,16 @@
 import React from 'react'
 import { Pagination } from 'semantic-ui-react'
 
-const TablePagination = (pageChangeHandle) => {
+const TablePagination = (props) => {
+    const {pageChangeHandle, totalPages, activePage} = props
     return (
         <Pagination
-            activePage={1}
+            activePage={activePage}
             boundaryRange={1}
             onPageChange={pageChangeHandle}
             size='mini'
             siblingRange={2}
-            totalPages={50}
+            totalPages={totalPages}
             firstItem={false}
             lastItem={false}
             prevItem={false}

@@ -1,16 +1,21 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { Button } from 'semantic-ui-react'
+import { Button, Select } from 'semantic-ui-react'
 import SalesTable from './SalesTable';
 import CreateSale from './CreateSale';
+import TablePagination from '../Common/TablePagination';
 
 export default class SalesHome extends Component {
     constructor(props) {
         super(props);
         this.state = {
             sales: [],
-            open: false
+            results: [],
+            open: false,
+            entryCount: 5,
+            activePage: 0
         };
+        this.pageChangeHandle = this.pageChangeHandle.bind(this)
     }
 
     componentDidMount() {
@@ -23,23 +28,23 @@ export default class SalesHome extends Component {
             .then(({ data }) => {
                 this.setState({
                     sales: data
-                })
+                }, () => { this.setActivePage(1) })
             })
             .catch(error => {
                 if (error.response.headers['content-type'] === 'text/plain') {
                     console.log(error.response.data);
                     alert(error.response.data);
                 } else
-                if (error.response) {
-                    console.log(error)
-                    console.log(error.response)
-                    Object.values(error.response.data.errors).forEach(e => {
-                        console.log(e)
-                        alert(e)
-                    });
-                } else {
-                    console.log('Error', error.message);
-                }
+                    if (error.response) {
+                        console.log(error)
+                        console.log(error.response)
+                        Object.values(error.response.data.errors).forEach(e => {
+                            console.log(e)
+                            alert(e)
+                        });
+                    } else {
+                        console.log('Error', error.message);
+                    }
             });
     }
 
@@ -49,13 +54,42 @@ export default class SalesHome extends Component {
         })
     }
 
+    pageChangeHandle(e, { activePage }) {
+        const { results, entryCount, sales } = this.state
+        results.length = 0
+        for (let i = 0; i < entryCount; i++) {
+            let index = (activePage - 1) * entryCount + i
+            if (typeof sales[index] !== 'undefined') {
+                results.push(sales[index])
+            } else {
+                break
+            }
+
+        }
+        this.setState({
+            results: results,
+            activePage: activePage
+        })
+    }
+
+    setActivePage(activePage) {
+        this.pageChangeHandle(undefined, { activePage: activePage })
+    }
+
     render() {
-        const { sales, open } = this.state;
+        const { sales, open, results, entryCount, activePage } = this.state;
         return (
             <div>
                 <Button color="blue" onClick={() => this.openCreateModal(true)}>New Sale</Button>
                 <CreateSale open={open} openCreateModal={this.openCreateModal} fetchSales={this.fetchSales} />
-                <SalesTable sales={sales} fetchSales={this.fetchSales}/>
+                <SalesTable sales={results} fetchSales={this.fetchSales} />
+                <Select defaultValue={entryCount} onChange={(_e, data) => {
+                    this.setState({
+                        entryCount: data.value
+                    }, () => { this.setActivePage(1) })
+                }} options={[{ value: 1, text: '1' }, { value: 5, text: '5' }, { value: 10, text: '10' }]} />
+                <TablePagination pageChangeHandle={this.pageChangeHandle} totalPages={
+                    Math.ceil(sales.length / entryCount)} activePage={activePage} />
             </div>
         )
     }
