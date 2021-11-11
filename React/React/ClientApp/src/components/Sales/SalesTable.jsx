@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useReducer } from 'react'
 import { Table, Button, Icon } from 'semantic-ui-react'
 import EditSale from './EditSale';
 import DeleteModal from '../Common/DeleteModal';
 import { GetProduct, GetCustomer, GetStore } from '../Common/CommonFunction';
 import moment from 'moment';
+import _ from 'lodash'
 
 const SalesTable = (props) => {
     const { sales, fetchSales } = props;
@@ -11,13 +12,13 @@ const SalesTable = (props) => {
     const [openEdit, setOpenEdit] = useState(false);
     const [openDelete, setOpenDelete] = useState(false);
     const [sale, setSale] = useState(undefined);
-    const [data, setData] = useState([])
+    const [salesInfo, setSalesInfo] = useState([])
 
     useEffect(() => {
-        if (typeof sales !== undefined && sales.length > 0 && salesRef.current !== sales) {
-            console.log(sales)
-            salesRef.current = sales
-            getData()
+        if (typeof sales !== 'undefined' && sales.length > 0 && !_.isEqual(salesRef.current, sales)) {
+            salesRef.current = [...sales]
+            getSalesInfo()
+            dispatch({ type: 'INIT' })
         }
     })
 
@@ -29,8 +30,8 @@ const SalesTable = (props) => {
         setOpenDelete(value)
     }
 
-    const getData = () => {
-        data.length = 0
+    const getSalesInfo = () => {
+        salesInfo.length = 0
         sales.map(async (e) => {
             const { id, productId, customerId, storeId, dateSold } = e;
             let product, customer, store;
@@ -52,22 +53,111 @@ const SalesTable = (props) => {
             }).catch(() => {
                 store = undefined
             })
-            data.push({ id, product, customer, store, dateSold })
-            setData([...data])
+            e.productName = product.name
+            e.customerName = customer.name
+            salesInfo.push({
+                id, product, customer, store, dateSold
+            })
+            setSalesInfo([...salesInfo])
         })
     }
 
+    function sortReducer(state, action) {
+        switch (action.type) {
+            case 'CHANGE_SORT':
+                if (state.column === action.column) {
+                    return {
+                        ...state,
+                        data: state.data.slice().reverse(),
+                        direction:
+                            state.direction === 'ascending' ? 'descending' : 'ascending',
+                    }
+                }
+                switch (action.column) {
+                    case 'customer': {
+                        return {
+                            column: action.column,
+                            data: _.sortBy(state.data, (obj) => { return obj.customer.name }),
+                            direction: 'ascending',
+                        }
+                    }
+                    case 'product': {
+                        return {
+                            column: action.column,
+                            data: _.sortBy(state.data, (obj) => { return obj.product.name }),
+                            direction: 'ascending',
+                        }
+                    }
+                    case 'store': {
+                        return {
+                            column: action.column,
+                            data: _.sortBy(state.data, (obj) => { return obj.store.name }),
+                            direction: 'ascending',
+                        }
+                    }
+                    case 'date': {
+                        return {
+                            column: action.column,
+                            data: _.sortBy(state.data, (obj) => { return new Date(obj.dateSold); }),
+                            direction: 'ascending',
+                        }
+                    }
+                    default: {
+                        return {
+                            column: action.column,
+                            data: _.sortBy(state.data, [action.column]),
+                            direction: 'ascending',
+                        }
+                    }
+                }
+            case 'INIT': {
+                return initSort()
+            }
+
+
+            default:
+                throw new Error()
+        }
+    }
+
+    const initSort = () => {
+        return {
+            data: salesInfo
+        }
+    }
+
+    const sortReducerRef = useReducer(sortReducer, {
+        column: null,
+        data: null,
+        direction: null,
+    }, initSort)
+
+    const [state, dispatch] = sortReducerRef
+    const { column, data, direction } = state
+
     return (
-        <Table celled striped>
+        <Table sortable celled striped fixed>
             <EditSale open={openEdit} openModal={openEditModal} fetchData={fetchSales} sale={sale} />
             <DeleteModal open={openDelete} openModal={openDeleteModal} fetchData={fetchSales}
                 url={`Sales/DeleteSales/${sale?.id}`} title={"Delete sale"} />
             <Table.Header>
                 <Table.Row>
-                    <Table.HeaderCell>Customer</Table.HeaderCell>
-                    <Table.HeaderCell>Product</Table.HeaderCell>
-                    <Table.HeaderCell>Store</Table.HeaderCell>
-                    <Table.HeaderCell>Date Sold</Table.HeaderCell>
+                    <Table.HeaderCell
+                        sorted={column === 'customer' ? direction : null}
+                        onClick={() => dispatch({ type: 'CHANGE_SORT', column: 'customer' })}
+                    >Customer</Table.HeaderCell>
+                    <Table.HeaderCell
+                        sorted={column === 'product' ? direction : null}
+                        onClick={() => dispatch({ type: 'CHANGE_SORT', column: 'product' })}
+                    >Product</Table.HeaderCell>
+                    <Table.HeaderCell
+                        sorted={column === 'store' ? direction : null}
+                        onClick={() => dispatch({ type: 'CHANGE_SORT', column: 'store' })}
+                    >Store</Table.HeaderCell>
+                    <Table.HeaderCell
+                        sorted={column === 'date' ? direction : null}
+                        onClick={() => dispatch({ type: 'CHANGE_SORT', column: 'date' })}
+                    >Date Sold</Table.HeaderCell>
                     <Table.HeaderCell>Action</Table.HeaderCell>
                     <Table.HeaderCell>Action</Table.HeaderCell>
                 </Table.Row>
@@ -104,25 +194,6 @@ const SalesTable = (props) => {
                     )
                 })}
             </Table.Body>
-
-            {/* <Table.Footer>
-                <Table.Row>
-                    <Table.HeaderCell colSpan='3'>
-                        <Menu floated='right' pagination>
-                            <Menu.Item as='a' icon>
-                                <Icon name='chevron left' />
-                            </Menu.Item>
-                            <Menu.Item as='a'>1</Menu.Item>
-                            <Menu.Item as='a'>2</Menu.Item>
-                            <Menu.Item as='a'>3</Menu.Item>
-                            <Menu.Item as='a'>4</Menu.Item>
-                            <Menu.Item as='a' icon>
-                                <Icon name='chevron right' />
-                            </Menu.Item>
-                        </Menu>
-                    </Table.HeaderCell>
-                </Table.Row>
-            </Table.Footer> */}
         </Table>
     )
 }

@@ -1,4 +1,4 @@
-import React, { useState, useReducer, useRef } from 'react'
+import React, { useState, useReducer, useEffect, useRef } from 'react'
 import { Table, Button, Icon } from 'semantic-ui-react'
 import EditCustomer from './EditCustomer';
 import DeleteModal from '../Common/DeleteModal';
@@ -9,9 +9,16 @@ const CustomerTable = (props) => {
     const [openEdit, setOpenEdit] = useState(false);
     const [openDelete, setOpenDelete] = useState(false);
     const [customer, setCustomer] = useState(undefined);
-    const customersRef = useRef(customers)
+    const customersRef = useRef(undefined)
 
     console.log(customers)
+    useEffect(() => {
+        if (typeof customers !== 'undefined' && customers.length > 0 && !_.isEqual(customersRef.current, customers)) {
+            customersRef.current = [...customers]
+            dispatch({ type: 'INIT' })
+        }
+    })
+
     const openEditModal = (value) => {
         setOpenEdit(value)
     }
@@ -22,7 +29,7 @@ const CustomerTable = (props) => {
 
     function sortReducer(state, action) {
         switch (action.type) {
-            case 'CHANGE_SORT':
+            case 'CHANGE_SORT': {
                 if (state.column === action.column) {
                     return {
                         ...state,
@@ -37,6 +44,10 @@ const CustomerTable = (props) => {
                     data: _.sortBy(state.data, [action.column]),
                     direction: 'ascending',
                 }
+            }
+            case 'INIT': {
+                return initSort()
+            }
             default:
                 throw new Error()
         }
@@ -48,11 +59,6 @@ const CustomerTable = (props) => {
         }
     }
 
-    if (customersRef.current !== customers) {
-        customersRef.current = customers
-        initSort()
-    }
-
     const sortReducerRef = useReducer(sortReducer, {
         column: null,
         data: null,
@@ -61,8 +67,6 @@ const CustomerTable = (props) => {
 
     const [state, dispatch] = sortReducerRef
     const { column, data, direction } = state
-
-    // console.log(sortReducerRef)
 
     return (
         <Table sortable celled striped fixed>
@@ -76,8 +80,8 @@ const CustomerTable = (props) => {
                         onClick={() => dispatch({ type: 'CHANGE_SORT', column: 'name' })}
                     >Name</Table.HeaderCell>
                     <Table.HeaderCell
-                        sorted={column === 'name' ? direction : null}
-                        onClick={() => dispatch({ type: 'CHANGE_SORT', column: 'name' })}
+                        sorted={column === 'address' ? direction : null}
+                        onClick={() => dispatch({ type: 'CHANGE_SORT', column: 'address' })}
                     >Address</Table.HeaderCell>
                     <Table.HeaderCell>Action</Table.HeaderCell>
                     <Table.HeaderCell>Action</Table.HeaderCell>
@@ -85,8 +89,8 @@ const CustomerTable = (props) => {
             </Table.Header>
 
             <Table.Body>
-                {/* {data.map((e) => { */}
-                {customers.map((e) => {
+                {data.map((e) => {
+                    // {customers.map((e) => {
                     const { id, name, address } = e;
 
                     return (

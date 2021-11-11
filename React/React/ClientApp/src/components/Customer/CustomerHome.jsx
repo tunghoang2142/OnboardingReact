@@ -28,7 +28,10 @@ export default class CustomerHome extends Component {
             .then(({ data }) => {
                 this.setState({
                     customers: data
-                }, () => { this.setActivePage(1) })
+                }, () => {
+                    this.setActivePage(1)
+                    console.log(data)
+                })
             })
             .catch(error => {
                 console.log(error.response)
