@@ -36,7 +36,7 @@ function EditSale(props) {
             productId: product,
             customerId: customer,
             storeId: store,
-            dateSold: dateSold
+            dateSold: new Date(moment(dateSold, "MM/DD/YYYY").format("YYYY-MM-DD"))
         }).then(() => {
             openModal(false);
             setCustomer(undefined)

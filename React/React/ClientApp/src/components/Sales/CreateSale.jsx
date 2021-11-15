@@ -24,7 +24,7 @@ function CreateSale(props) {
             customerId: customer,
             productId: product,
             storeId: store,
-            dateSold: moment(dateSold).format("DD-MM-YYYY")
+            dateSold: new Date(moment(dateSold, "MM/DD/YYYY").format("YYYY-MM-DD"))
         }).then(() => {
             openCreateModal(false);
             setCustomer("");
@@ -93,7 +93,7 @@ function CreateSale(props) {
 
     return (
         <Modal size="tiny" open={open}>
-            <Modal.Header>Create product</Modal.Header>
+            <Modal.Header>Create sale</Modal.Header>
             <Modal.Content>
                 <Modal.Description>
                     <Form>
