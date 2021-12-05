@@ -91,7 +91,7 @@ namespace React.Controllers
             var store = await _context.Store.FindAsync(id);
             if (store == null)
             {
-                return NotFound();
+                return NotFound("Store not found!");
             }
 
             try

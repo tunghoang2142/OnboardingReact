@@ -91,7 +91,7 @@ namespace React.Controllers
             var customer = await _context.Customer.FindAsync(id);
             if (customer == null)
             {
-                return Content("Customer not found!");
+                return NotFound("Customer not found!");
             }
             try
             {
@@ -102,7 +102,7 @@ namespace React.Controllers
             {
                 if (e.InnerException.Message.Contains("The DELETE statement conflicted with the REFERENCE constraint"))
                 {
-                    return BadRequest("Unable to delete customer as they are being used by other table! Please delete them first.");
+                    return Conflict("Unable to delete customer as they are being used by other table! Please delete them first.");
                 }
                 return StatusCode(500, "Unhandled exception! Unable to delete the record: " + e.Message);
             }
