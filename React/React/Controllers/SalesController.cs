@@ -55,7 +55,7 @@ namespace React.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException e)
             {
                 if (!SalesExists(id))
                 {
@@ -63,8 +63,12 @@ namespace React.Controllers
                 }
                 else
                 {
-                    throw;
+                    return BadRequest(e);
                 }
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
             }
 
             return NoContent();
