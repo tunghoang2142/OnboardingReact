@@ -12,8 +12,8 @@ function DeleteModal(props) {
                 alert(data)
             })
             .catch(error => {
-                console.error(error);
-                alert(error)
+                console.error(error.response);
+                alert(error.response.data)
             })
     }
 

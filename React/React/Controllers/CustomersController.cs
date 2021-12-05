@@ -63,12 +63,12 @@ namespace React.Controllers
                 }
                 else
                 {
-                    return BadRequest(e);
+                    return StatusCode(500, "Unhandled exception! " + e.Message);
                 }
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                return StatusCode(500, "Unhandled exception! " + e.Message);
             }
 
             return NoContent();
@@ -102,13 +102,13 @@ namespace React.Controllers
             {
                 if (e.InnerException.Message.Contains("The DELETE statement conflicted with the REFERENCE constraint"))
                 {
-                    return Content("Unable to delete customer as they are being used by other table! Please delete them first.");
+                    return BadRequest("Unable to delete customer as they are being used by other table! Please delete them first.");
                 }
-                return Content("Uncatched exception! Unable to delete the record: " + e.Message);
+                return StatusCode(500, "Unhandled exception! Unable to delete the record: " + e.Message);
             }
             catch (Exception e)
             {
-                return Content("Uncatched exception! Unable to delete the record: " + e.Message);
+                return StatusCode(500, "Unhandled exception! Unable to delete the record: " + e.Message);
             }
 
             return Content("Customer deleted.");
